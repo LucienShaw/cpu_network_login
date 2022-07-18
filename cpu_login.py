@@ -42,4 +42,3 @@ def main():
     login(USERNAME, PASSWORD, IP)
 if __name__ == '__main__':
     main()
-
