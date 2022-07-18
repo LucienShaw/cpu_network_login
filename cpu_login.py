@@ -1,6 +1,9 @@
 import requests
+import sys
+import getpass
 def get_ip():
     import socket
+    ip = ''
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 80))
@@ -23,11 +26,19 @@ def login(username, password, ip):
     # print(IP)
     response = requests.get('http://192.168.199.21:801/eportal/', headers=headers, params=params, verify=False)
 def main():
-    # USERNAME = input('Please enter your username: ')
-    # PASSWORD = input('Please enter your password: ')
-    USERNAME = ''
-    PASSWORD = ''
+    args = len(sys.argv)
+    O = 0
+    if args <= O + 1:
+        USERNAME = input('Please enter your username: ')
+        PASSWORD = getpass.getpass('Please enter your password: ')
+    elif args == O + 2:
+        USERNAME = sys.argv[1]
+        PASSWORD = getpass.getpass('Please enter your password: ')
+    elif args >= O + 3:
+        USERNAME = sys.argv[1]
+        PASSWORD = sys.argv[2]
     IP = get_ip()
+    print(IP)
     login(USERNAME, PASSWORD, IP)
 if __name__ == '__main__':
     main()
