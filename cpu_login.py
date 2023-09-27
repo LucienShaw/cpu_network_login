@@ -42,3 +42,5 @@ def main():
     login(USERNAME, PASSWORD, IP)
 if __name__ == '__main__':
     main()
+
+# curl "http://192.168.199.21:801/eportal/?c=Portal&a=login&login_method=1&user_account=ACCOUNT&user_password=PASSWORD&wlan_user_ip=IP_ADDRESS"
