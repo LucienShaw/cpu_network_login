@@ -52,6 +52,6 @@ def login(ip, username, password):
         raise RuntimeError('Invalid response')
     res = json.loads(re_obj.group(1))
     if res['ret_code'] == 2 or res['result'] == '1':
-        return f"Success: ip={ip}; user={username}"
+        return f"Success: ip={ip}; username={username}"
     else:
-        return f"Failure: ip={ip}; user={username}\nDetail:\n{response.text}"
+        return f"Failure: ip={ip}; username={username}\nDetail:\n{response.text}"
