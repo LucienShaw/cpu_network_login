@@ -2,10 +2,26 @@ import re
 import json
 import utils
 import requests
+from enum import Enum, unique
 
 
-def get_ip() -> str:
-    url = "https://p.cpu.edu.cn/drcom/chkstatus"
+@unique
+class AuthHost(Enum):
+    General = "192.168.199.21"
+    Dormitory = "172.17.253.3"
+
+
+@unique
+class TerminalType(Enum):
+    Other = "0"
+    PC = "1"
+    Mobile = "2"
+    Tablet_Landscape = "3"
+    Tablet_Portrait = "4"
+
+
+def get_ip(host: AuthHost = AuthHost.General) -> str:
+    url = f"http://{host.value}/drcom/chkstatus"
     params = {"callback": ""}
     response = requests.get(url=url, params=params)
     response.encoding = "utf-8"
@@ -17,8 +33,8 @@ def get_ip() -> str:
     return ip
 
 
-def get_status(ip: str = "") -> dict:
-    ip = str(ip) if isinstance(ip, str) and ip != "" else get_ip()
+def get_status(ip: str = "", host: AuthHost = AuthHost.General) -> dict:
+    ip = str(ip) if isinstance(ip, str) and ip != "" else get_ip(host=host)
 
     status = {
         "success": False,
@@ -29,7 +45,7 @@ def get_status(ip: str = "") -> dict:
         "username": "",
     }
 
-    url = "https://p.cpu.edu.cn:802/eportal/portal/mac/find"
+    url = f"http://{host.value}:801/eportal/portal/mac/find"
     params = {"wlan_user_ip": ip}
     response = requests.get(url=url, params=params)
     response.encoding = "utf-8"
@@ -58,15 +74,16 @@ def login(
     username: str,
     password: str,
     ip: str = "",
-    terminal_type: str = "1",
+    terminal_type: TerminalType = TerminalType.PC,
+    host: AuthHost = AuthHost.General,
 ) -> dict:
     username = str(username)
     password = str(password)
     assert username != "", f"用户名不能为空"
     assert password != "", f"密码不能为空"
-    ip = str(ip) if isinstance(ip, str) and ip != "" else get_ip()
+    ip = str(ip) if isinstance(ip, str) and ip != "" else get_ip(host=host)
 
-    cur_status = get_status(ip=ip)
+    cur_status = get_status(ip=ip, host=host)
     if not cur_status["success"]:
         return {
             "success": False,
@@ -90,12 +107,12 @@ def login(
         "username": username,
     }
 
-    url = "https://p.cpu.edu.cn:802/eportal/portal/login"
+    url = f"http://{host.value}:801/eportal/portal/login"
     params = {
         "user_account": str(username),
         "user_password": str(password),
         "wlan_user_ip": str(ip),
-        "terminal_type": str(terminal_type),
+        "terminal_type": terminal_type.value,
         # 访问设备
         # 0-其他
         # 1-PC
@@ -132,10 +149,10 @@ def login(
     return status
 
 
-def logout(ip: str = ""):
-    ip = str(ip) if isinstance(ip, str) and ip != "" else get_ip()
+def logout(ip: str = "", host: AuthHost = AuthHost.General) -> dict:
+    ip = str(ip) if isinstance(ip, str) and ip != "" else get_ip(host=host)
 
-    cur_status = get_status(ip=ip)
+    cur_status = get_status(ip=ip, host=host)
     if not cur_status["is_online"]:
         return {
             "success": True,
@@ -151,7 +168,7 @@ def logout(ip: str = ""):
         "ip": ip,
     }
 
-    url_unbind = "https://p.cpu.edu.cn:802/eportal/portal/mac/unbind"
+    url_unbind = f"http://{host.value}:801/eportal/portal/mac/unbind"
     params_unbind = {
         "user_account": username,
         "wlan_user_mac": mac,
@@ -172,7 +189,7 @@ def logout(ip: str = ""):
         status["success"] = True
         return status
 
-    url_logout = "https://p.cpu.edu.cn:802/eportal/portal/logout"
+    url_logout = f"http://{host.value}:801/eportal/portal/logout"
     params_logout = {
         "user_account": "drcom",
         "user_password": "123",
